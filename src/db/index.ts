@@ -1,11 +1,9 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
+import { getDatabaseUrl } from "./url";
 
-const url = process.env.DATABASE_URL;
-if (!url) {
-  throw new Error("DATABASE_URL が設定されていません（.env.example を参照）");
-}
+const url = getDatabaseUrl();
 
 // 開発中はホットリロードのたびに接続が増えないよう、クライアントを使い回す
 const globalForDb = globalThis as unknown as { pgClient?: ReturnType<typeof postgres> };
