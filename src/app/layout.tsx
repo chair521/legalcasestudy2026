@@ -20,6 +20,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Link href="/terms" className="hover:text-teal-700">
                 用語集
               </Link>
+              <Link href="/records" className="hover:text-teal-700">
+                対応記録
+              </Link>
             </nav>
           </div>
         </header>

@@ -1,6 +1,6 @@
-import { and, asc, count, desc, eq, ilike, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, ne, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { terms } from "@/db/schema";
+import { recordTerms, terms } from "@/db/schema";
 import { keywordPatterns, parseKeywords, type SortKey } from "@/lib/search";
 
 const DEFAULT_CATEGORIES = ["契約", "費用", "手続き"];
@@ -70,4 +70,15 @@ export async function searchTerms({ q, category, sort, page }: SearchParams) {
   ]);
 
   return { rows, total };
+}
+
+/** 用語ごとに、関連づけられた対応記録の件数を返す */
+export async function getRecordCounts(termIds: number[]): Promise<Map<number, number>> {
+  if (termIds.length === 0) return new Map();
+  const rows = await db
+    .select({ termId: recordTerms.termId, count: count() })
+    .from(recordTerms)
+    .where(inArray(recordTerms.termId, termIds))
+    .groupBy(recordTerms.termId);
+  return new Map(rows.map((r) => [r.termId, r.count]));
 }

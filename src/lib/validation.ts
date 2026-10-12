@@ -36,3 +36,22 @@ export type FormState<K extends string> = {
   // エラー時に入力内容を保持するため、送信された値をそのまま返す
   values?: Partial<Record<K, string>>;
 };
+
+export const recordInputSchema = z.object({
+  title: required("件名", 100),
+  occurredOn: z.iso.date("日付を正しく入力してください"),
+  procedure: text(100),
+  situation: freeText(5000),
+  issue: freeText(5000).pipe(z.string().min(1, "詰まったところを入力してください")),
+  explanation: freeText(5000).pipe(z.string().min(1, "どう説明したかを入力してください")),
+  improvement: freeText(5000),
+  termIds: z.array(z.coerce.number().int().positive()).max(100, "関連づけられる用語は100件までです"),
+});
+
+export type RecordInput = z.infer<typeof recordInputSchema>;
+export const recordFields = ["title", "occurredOn", "procedure", "situation", "issue", "explanation", "improvement"] as const;
+
+/** 日本時間での今日の日付（YYYY-MM-DD） */
+export function todayInJapan(): string {
+  return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
+}

@@ -5,7 +5,7 @@ import { LinkButton, PageHeader } from "@/components/ui";
 import { firstParam, parseKeywords, parsePage, parseSort } from "@/lib/search";
 import { toHiragana } from "@/lib/text";
 import { deleteTerm } from "./actions";
-import { getCategoryCounts, PAGE_SIZE, searchTerms } from "./queries";
+import { getCategoryCounts, getRecordCounts, PAGE_SIZE, searchTerms } from "./queries";
 import { SearchForm } from "./SearchForm";
 
 export default async function TermsPage(props: PageProps<"/terms">) {
@@ -19,6 +19,7 @@ export default async function TermsPage(props: PageProps<"/terms">) {
     searchTerms({ q, category, sort, page }),
     getCategoryCounts(),
   ]);
+  const recordCounts = await getRecordCounts(rows.map((t) => t.id));
 
   const keywords = parseKeywords(q);
   const readingKeywords = keywords.map(toHiragana);
@@ -93,6 +94,11 @@ export default async function TermsPage(props: PageProps<"/terms">) {
                     <Highlight text={t.note} keywords={keywords} />
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right">
+                    {recordCounts.has(t.id) && (
+                      <Link href={`/records?term=${t.id}`} className="mr-3 text-slate-500 hover:text-teal-700 hover:underline">
+                        記録 {recordCounts.get(t.id)}件
+                      </Link>
+                    )}
                     <Link href={`/terms/${t.id}/edit`} className="mr-2 text-teal-700 hover:underline">
                       編集
                     </Link>
