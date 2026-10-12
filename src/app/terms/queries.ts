@@ -9,28 +9,30 @@ export const PAGE_SIZE = 50;
 export const UNCATEGORIZED = "__none__";
 
 /** カテゴリ入力の候補（既定の候補＋登録済みのカテゴリ） */
-export async function getCategories(): Promise<string[]> {
+export async function getCategories(userId: number): Promise<string[]> {
   const rows = await db
     .selectDistinct({ category: terms.category })
     .from(terms)
-    .where(ne(terms.category, ""))
+    .where(and(eq(terms.userId, userId), ne(terms.category, "")))
     .orderBy(asc(terms.category));
   return [...new Set([...DEFAULT_CATEGORIES, ...rows.map((r) => r.category)])];
 }
 
 /** 絞り込み用：登録済みのカテゴリと件数 */
-export async function getCategoryCounts() {
+export async function getCategoryCounts(userId: number) {
   return db
     .select({ category: terms.category, count: count() })
     .from(terms)
+    .where(eq(terms.userId, userId))
     .groupBy(terms.category)
     .orderBy(asc(terms.category));
 }
 
-type SearchParams = { q: string; category: string; sort: SortKey; page: number };
+type SearchParams = { userId: number; q: string; category: string; sort: SortKey; page: number };
 
-export async function searchTerms({ q, category, sort, page }: SearchParams) {
-  const conditions: SQL[] = [];
+export async function searchTerms({ userId, q, category, sort, page }: SearchParams) {
+  // 自分の用語だけが対象
+  const conditions: SQL[] = [eq(terms.userId, userId)];
 
   if (category === UNCATEGORIZED) {
     conditions.push(eq(terms.category, ""));
@@ -72,7 +74,7 @@ export async function searchTerms({ q, category, sort, page }: SearchParams) {
   return { rows, total };
 }
 
-/** 用語ごとに、関連づけられた対応記録の件数を返す */
+/** 用語ごとに、関連づけられた対応記録の件数を返す（termIds は所有者確認済みのもの） */
 export async function getRecordCounts(termIds: number[]): Promise<Map<number, number>> {
   if (termIds.length === 0) return new Map();
   const rows = await db
@@ -81,4 +83,8 @@ export async function getRecordCounts(termIds: number[]): Promise<Map<number, nu
     .where(inArray(recordTerms.termId, termIds))
     .groupBy(recordTerms.termId);
   return new Map(rows.map((r) => [r.termId, r.count]));
+}
+
+export async function getTerm(userId: number, id: number) {
+  return db.query.terms.findFirst({ where: and(eq(terms.id, id), eq(terms.userId, userId)) });
 }

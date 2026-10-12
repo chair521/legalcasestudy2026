@@ -5,8 +5,8 @@ import { keywordPatterns, parseKeywords } from "@/lib/search";
 
 export const RECORD_LIMIT = 100;
 
-export async function searchRecords({ q, termId }: { q: string; termId?: number }) {
-  const conditions: SQL[] = [];
+export async function searchRecords({ userId, q, termId }: { userId: number; q: string; termId?: number }) {
+  const conditions: SQL[] = [eq(records.userId, userId)];
 
   for (const keyword of parseKeywords(q)) {
     const { text } = keywordPatterns(keyword);
@@ -37,27 +37,28 @@ export async function searchRecords({ q, termId }: { q: string; termId?: number 
   });
 }
 
-export async function getRecord(id: number) {
+export async function getRecord(userId: number, id: number) {
   return db.query.records.findFirst({
-    where: eq(records.id, id),
+    where: and(eq(records.id, id), eq(records.userId, userId)),
     with: { recordTerms: { with: { term: true } } },
   });
 }
 
 /** フォームの用語選択に使う、全用語の一覧（軽い列だけ） */
-export async function getTermOptions() {
+export async function getTermOptions(userId: number) {
   return db
     .select({ id: terms.id, japanese: terms.japanese, chinese: terms.chinese, reading: terms.reading })
     .from(terms)
+    .where(eq(terms.userId, userId))
     .orderBy(asc(terms.reading), asc(terms.japanese));
 }
 
 /** 手続きの種類の入力候補 */
-export async function getProcedures(): Promise<string[]> {
+export async function getProcedures(userId: number): Promise<string[]> {
   const rows = await db
     .selectDistinct({ procedure: records.procedure })
     .from(records)
-    .where(ne(records.procedure, ""))
+    .where(and(eq(records.userId, userId), ne(records.procedure, "")))
     .orderBy(asc(records.procedure));
   return rows.map((r) => r.procedure);
 }

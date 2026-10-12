@@ -1,13 +1,12 @@
-import { connection } from "next/server";
 import { PageHeader } from "@/components/ui";
+import { requireUser } from "@/lib/auth/session";
 import { createTerm } from "../actions";
 import { getCategories } from "../queries";
 import { TermForm } from "../TermForm";
 
 export default async function NewTermPage() {
-  // DB の内容はリクエストごとに変わるので、ビルド時に静的生成させない
-  await connection();
-  const categories = await getCategories();
+  const user = await requireUser();
+  const categories = await getCategories(user.id);
   return (
     <>
       <PageHeader title="用語を追加" />

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { date, index, integer, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import { date, index, integer, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -9,11 +9,44 @@ const timestamps = {
     .$onUpdate(() => new Date()),
 };
 
+export const users = pgTable(
+  "users",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    // 小文字にそろえて保存する
+    email: text("email").notNull(),
+    passwordHash: text("password_hash").notNull(),
+    createdAt: timestamps.createdAt,
+  },
+  (t) => [uniqueIndex("users_email_idx").on(t.email)],
+);
+
+// ログイン中のセッション。トークンそのものではなく SHA-256 ハッシュを id として保存する
+export const sessions = pgTable(
+  "sessions",
+  {
+    id: text("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamps.createdAt,
+  },
+  (t) => [index("sessions_user_id_idx").on(t.userId)],
+);
+
+// ユーザーが削除されたら、そのユーザーのデータもまとめて消す
+const ownerId = () =>
+  integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" });
+
 // 用語集（日本語 ⇔ 中国語）
 export const terms = pgTable(
   "terms",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: ownerId(),
     japanese: text("japanese").notNull(),
     chinese: text("chinese").notNull(),
     // 読みはひらがなで保存する（検索時の表記ゆれを減らすため）
@@ -22,7 +55,7 @@ export const terms = pgTable(
     note: text("note").notNull().default(""),
     ...timestamps,
   },
-  (t) => [index("terms_category_idx").on(t.category)],
+  (t) => [index("terms_user_id_category_idx").on(t.userId, t.category)],
 );
 
 // 対応記録：どの手続きで、どこで詰まり、どう説明したか
@@ -30,6 +63,7 @@ export const records = pgTable(
   "records",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: ownerId(),
     title: text("title").notNull(),
     occurredOn: date("occurred_on").notNull(),
     procedure: text("procedure").notNull().default(""), // 手続きの種類（例：在留期間更新）
@@ -39,7 +73,7 @@ export const records = pgTable(
     improvement: text("improvement").notNull().default(""), // 次回への改善
     ...timestamps,
   },
-  (t) => [index("records_occurred_on_idx").on(t.occurredOn)],
+  (t) => [index("records_user_id_occurred_on_idx").on(t.userId, t.occurredOn)],
 );
 
 // 対応記録 ⇔ 用語 の多対多。どちらかが削除されたら関連も消える

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { DeleteButton } from "@/components/DeleteButton";
 import { LinkButton, PageHeader } from "@/components/ui";
+import { requireUser } from "@/lib/auth/session";
 import { deleteRecord } from "../actions";
 import { getRecord } from "../queries";
 
@@ -16,10 +17,11 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export default async function RecordPage(props: PageProps<"/records/[id]">) {
+  const user = await requireUser();
   const id = Number((await props.params).id);
   if (!Number.isInteger(id)) notFound();
 
-  const record = await getRecord(id);
+  const record = await getRecord(user.id, id);
   if (!record) notFound();
 
   return (

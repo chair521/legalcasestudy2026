@@ -2,6 +2,7 @@ import Link from "next/link";
 import { DeleteButton } from "@/components/DeleteButton";
 import { Highlight } from "@/components/Highlight";
 import { LinkButton, PageHeader } from "@/components/ui";
+import { requireUser } from "@/lib/auth/session";
 import { firstParam, parseKeywords, parsePage, parseSort } from "@/lib/search";
 import { toHiragana } from "@/lib/text";
 import { deleteTerm } from "./actions";
@@ -9,6 +10,7 @@ import { getCategoryCounts, getRecordCounts, PAGE_SIZE, searchTerms } from "./qu
 import { SearchForm } from "./SearchForm";
 
 export default async function TermsPage(props: PageProps<"/terms">) {
+  const user = await requireUser();
   const params = await props.searchParams;
   const q = firstParam(params.q) ?? "";
   const category = firstParam(params.category) ?? "";
@@ -16,8 +18,8 @@ export default async function TermsPage(props: PageProps<"/terms">) {
   const page = parsePage(firstParam(params.page));
 
   const [{ rows, total }, categoryCounts] = await Promise.all([
-    searchTerms({ q, category, sort, page }),
-    getCategoryCounts(),
+    searchTerms({ userId: user.id, q, category, sort, page }),
+    getCategoryCounts(user.id),
   ]);
   const recordCounts = await getRecordCounts(rows.map((t) => t.id));
 

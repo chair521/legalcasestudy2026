@@ -1,19 +1,18 @@
-import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { db } from "@/db";
-import { terms } from "@/db/schema";
 import { PageHeader } from "@/components/ui";
+import { requireUser } from "@/lib/auth/session";
 import { updateTerm } from "../../actions";
-import { getCategories } from "../../queries";
+import { getCategories, getTerm } from "../../queries";
 import { TermForm } from "../../TermForm";
 
 export default async function EditTermPage(props: PageProps<"/terms/[id]/edit">) {
+  const user = await requireUser();
   const id = Number((await props.params).id);
   if (!Number.isInteger(id)) notFound();
 
   const [term, categories] = await Promise.all([
-    db.query.terms.findFirst({ where: eq(terms.id, id) }),
-    getCategories(),
+    getTerm(user.id, id),
+    getCategories(user.id),
   ]);
   if (!term) notFound();
 

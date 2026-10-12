@@ -1,13 +1,13 @@
-import { connection } from "next/server";
 import { PageHeader } from "@/components/ui";
+import { requireUser } from "@/lib/auth/session";
 import { todayInJapan } from "@/lib/validation";
 import { createRecord } from "../actions";
 import { getProcedures, getTermOptions } from "../queries";
 import { RecordForm } from "../RecordForm";
 
 export default async function NewRecordPage() {
-  await connection();
-  const [termOptions, procedures] = await Promise.all([getTermOptions(), getProcedures()]);
+  const user = await requireUser();
+  const [termOptions, procedures] = await Promise.all([getTermOptions(user.id), getProcedures(user.id)]);
 
   return (
     <>

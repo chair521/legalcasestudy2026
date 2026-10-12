@@ -1,21 +1,21 @@
 import Form from "next/form";
 import Link from "next/link";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { terms } from "@/db/schema";
 import { buttonClass, inputClass, LinkButton, PageHeader } from "@/components/ui";
+import { requireUser } from "@/lib/auth/session";
+import { getTerm } from "../terms/queries";
 import { firstParam, parseKeywords } from "@/lib/search";
 import { RECORD_LIMIT, searchRecords } from "./queries";
 
 export default async function RecordsPage(props: PageProps<"/records">) {
+  const user = await requireUser();
   const params = await props.searchParams;
   const q = firstParam(params.q) ?? "";
   const termIdParam = Number(firstParam(params.term));
   const termId = Number.isInteger(termIdParam) && termIdParam > 0 ? termIdParam : undefined;
 
   const [rows, term] = await Promise.all([
-    searchRecords({ q, termId }),
-    termId ? db.query.terms.findFirst({ where: eq(terms.id, termId), columns: { id: true, japanese: true } }) : undefined,
+    searchRecords({ userId: user.id, q, termId }),
+    termId ? getTerm(user.id, termId) : undefined,
   ]);
   const isFiltered = parseKeywords(q).length > 0 || termId !== undefined;
 
