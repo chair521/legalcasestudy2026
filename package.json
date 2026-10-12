@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "npm run db:migrate && npm run db:seed && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
@@ -44,6 +45,6 @@
     "vitest": "^5.0.3"
   },
   "engines": {
-    "node": ">=20.9"
+    "node": "22.x"
   }
 }
