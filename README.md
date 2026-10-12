@@ -3,7 +3,7 @@
 中日通訳のための **用語集** と **対応記録** を管理する Web アプリです。
 「どの手続きで、どこで詰まり、どう説明したか」を用語と結びつけて残し、次の現場に生かすことを目的にしています。
 
-- デモ: （デプロイ後に URL を記入）
+- デモ: https://legalcasestudy2026.vercel.app
 - デモ用アカウント: `demo@example.com` / `demo-pass-2026`（データはすべて架空です）
 
 ![用語の検索](docs/images/terms-search.png)
