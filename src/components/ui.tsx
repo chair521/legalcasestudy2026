@@ -22,7 +22,10 @@ export function PageHeader({ title, children }: { title: string; children?: Reac
   );
 }
 
-export function LinkButton({ variant = "primary", ...props }: ComponentProps<typeof Link> & { variant?: "primary" | "secondary" }) {
+export function LinkButton({
+  variant = "primary",
+  ...props
+}: ComponentProps<typeof Link> & { variant?: "primary" | "secondary" }) {
   return <Link className={buttonClass[variant]} {...props} />;
 }
 

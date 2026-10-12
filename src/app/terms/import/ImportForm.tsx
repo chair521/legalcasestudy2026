@@ -64,7 +64,9 @@ export function ImportForm() {
         </Field>
 
         <fieldset className="space-y-2">
-          <legend className="text-sm font-medium text-slate-700">既に登録されている用語（日本語＋中国語が同じ）の扱い</legend>
+          <legend className="text-sm font-medium text-slate-700">
+            既に登録されている用語（日本語＋中国語が同じ）の扱い
+          </legend>
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="mode" value="skip" defaultChecked />
             そのまま残す（CSV の行はスキップ）

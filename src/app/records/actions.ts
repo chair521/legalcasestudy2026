@@ -37,7 +37,10 @@ export async function createRecord(_prev: RecordFormState, formData: FormData): 
   const validIds = await ownTermIds(user.id, requestedIds);
 
   const id = await db.transaction(async (tx) => {
-    const [created] = await tx.insert(records).values({ ...data, userId: user.id }).returning({ id: records.id });
+    const [created] = await tx
+      .insert(records)
+      .values({ ...data, userId: user.id })
+      .returning({ id: records.id });
     if (validIds.length > 0) {
       await tx.insert(recordTerms).values(validIds.map((termId) => ({ recordId: created.id, termId })));
     }

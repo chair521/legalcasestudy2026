@@ -20,7 +20,13 @@ describe("parseTermsCsv", () => {
   it("日本語ヘッダーでも英語ヘッダーでも読める", () => {
     const ja = parseTermsCsv("日本語,中国語,読み,カテゴリ,メモ\n敷金,押金,シキキン,費用,返還あり");
     const en = parseTermsCsv("japanese,chinese,reading,category,note\n敷金,押金,しききん,費用,返還あり");
-    expect(ja.rows[0].data).toEqual({ japanese: "敷金", chinese: "押金", reading: "しききん", category: "費用", note: "返還あり" });
+    expect(ja.rows[0].data).toEqual({
+      japanese: "敷金",
+      chinese: "押金",
+      reading: "しききん",
+      category: "費用",
+      note: "返還あり",
+    });
     expect(en.rows[0].data).toEqual(ja.rows[0].data);
   });
 
@@ -70,6 +76,9 @@ describe("termsToCsv", () => {
     const csv = termsToCsv([term, { ...term, japanese: "礼金", chinese: "礼金", note: 'カンマ, と "引用符"' }]);
     const r = parseTermsCsv(decodeCsv(encoder.encode(csv)));
     expect(r.errors).toEqual([]);
-    expect(r.rows.map((x) => x.data)).toEqual([term, { ...term, japanese: "礼金", chinese: "礼金", note: 'カンマ, と "引用符"' }]);
+    expect(r.rows.map((x) => x.data)).toEqual([
+      term,
+      { ...term, japanese: "礼金", chinese: "礼金", note: 'カンマ, と "引用符"' },
+    ]);
   });
 });

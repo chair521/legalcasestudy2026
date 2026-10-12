@@ -25,7 +25,10 @@ export async function searchRecords({ userId, q, termId }: { userId: number; q: 
   if (termId) {
     // この用語が関連づけられた記録だけ
     conditions.push(
-      inArray(records.id, db.select({ id: recordTerms.recordId }).from(recordTerms).where(eq(recordTerms.termId, termId))),
+      inArray(
+        records.id,
+        db.select({ id: recordTerms.recordId }).from(recordTerms).where(eq(recordTerms.termId, termId)),
+      ),
     );
   }
 

@@ -27,7 +27,7 @@ export default async function ImportPage() {
                 ["中国語", "必須"],
                 ["読み", "カタカナでも可"],
                 ["カテゴリ", "例：契約"],
-                ["メモ", "改行を含む場合は \" で囲む"],
+                ["メモ", '改行を含む場合は " で囲む'],
               ].map(([col, desc]) => (
                 <tr key={col}>
                   <td className="px-3 py-1.5 font-medium">{col}</td>
@@ -39,8 +39,8 @@ export default async function ImportPage() {
           <p>英語の見出し（japanese, chinese, reading, category, note）でも読み込めます。</p>
           <p>一度に {MAX_IMPORT_ROWS} 行まで。Excel で保存した Shift_JIS の CSV も読み込めます。</p>
           <p className="rounded border border-amber-200 bg-amber-50 p-2 text-amber-900">
-            Shift_JIS には簡体字（例：证・师）が含まれないため、日本語版 Excel の「CSV」形式で保存すると中国語が「?」に置き換わります。
-            Excel では「CSV UTF-8」形式で保存してください。
+            Shift_JIS には簡体字（例：证・师）が含まれないため、日本語版 Excel
+            の「CSV」形式で保存すると中国語が「?」に置き換わります。 Excel では「CSV UTF-8」形式で保存してください。
           </p>
           <a href="/terms/import/template" className="inline-block text-teal-700 underline" download>
             テンプレートをダウンロード

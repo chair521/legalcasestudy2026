@@ -32,11 +32,22 @@ export function TermForm({ action, term, categories, submitLabel }: Props) {
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="読み" htmlFor="reading" hint="カタカナで入力してもひらがなで保存されます" errors={state.errors?.reading}>
+        <Field
+          label="読み"
+          htmlFor="reading"
+          hint="カタカナで入力してもひらがなで保存されます"
+          errors={state.errors?.reading}
+        >
           <input id="reading" name="reading" defaultValue={value("reading")} className={inputClass} />
         </Field>
         <Field label="カテゴリ" htmlFor="category" hint="例：契約、費用、手続き" errors={state.errors?.category}>
-          <input id="category" name="category" defaultValue={value("category")} className={inputClass} list="category-options" />
+          <input
+            id="category"
+            name="category"
+            defaultValue={value("category")}
+            className={inputClass}
+            list="category-options"
+          />
           <datalist id="category-options">
             {categories.map((c) => (
               <option key={c} value={c} />

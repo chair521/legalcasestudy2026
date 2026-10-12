@@ -16,7 +16,10 @@ export function SearchForm({ q, category, sort, categoryCounts }: Props) {
   const hasFilter = q !== "" || category !== "";
 
   return (
-    <Form action="/terms" className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4">
+    <Form
+      action="/terms"
+      className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4"
+    >
       <div className="min-w-56 flex-1">
         <label htmlFor="q" className="mb-1 block text-xs font-medium text-slate-600">
           キーワード（日本語・中国語・読み・メモ）

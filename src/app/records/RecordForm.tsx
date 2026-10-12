@@ -49,8 +49,19 @@ export function RecordForm(props: Props) {
         </Field>
       </div>
 
-      <Field label="手続きの種類" htmlFor="procedure" hint="例：在留期間更新、賃貸契約、転入届" errors={state.errors?.procedure}>
-        <input id="procedure" name="procedure" defaultValue={value("procedure")} className={inputClass} list="procedure-options" />
+      <Field
+        label="手続きの種類"
+        htmlFor="procedure"
+        hint="例：在留期間更新、賃貸契約、転入届"
+        errors={state.errors?.procedure}
+      >
+        <input
+          id="procedure"
+          name="procedure"
+          defaultValue={value("procedure")}
+          className={inputClass}
+          list="procedure-options"
+        />
         <datalist id="procedure-options">
           {procedures.map((p) => (
             <option key={p} value={p} />
@@ -58,7 +69,12 @@ export function RecordForm(props: Props) {
         </datalist>
       </Field>
 
-      <Field label="状況" htmlFor="situation" hint="どんな場面だったか（個人が特定できる情報は書かない）" errors={state.errors?.situation}>
+      <Field
+        label="状況"
+        htmlFor="situation"
+        hint="どんな場面だったか（個人が特定できる情報は書かない）"
+        errors={state.errors?.situation}
+      >
         <textarea id="situation" name="situation" rows={3} defaultValue={value("situation")} className={inputClass} />
       </Field>
 
@@ -67,11 +83,28 @@ export function RecordForm(props: Props) {
       </Field>
 
       <Field label="どう説明したか" htmlFor="explanation" required errors={state.errors?.explanation}>
-        <textarea id="explanation" name="explanation" rows={4} defaultValue={value("explanation")} className={inputClass} />
+        <textarea
+          id="explanation"
+          name="explanation"
+          rows={4}
+          defaultValue={value("explanation")}
+          className={inputClass}
+        />
       </Field>
 
-      <Field label="次回への改善" htmlFor="improvement" hint="次に同じ場面が来たらどうするか" errors={state.errors?.improvement}>
-        <textarea id="improvement" name="improvement" rows={3} defaultValue={value("improvement")} className={inputClass} />
+      <Field
+        label="次回への改善"
+        htmlFor="improvement"
+        hint="次に同じ場面が来たらどうするか"
+        errors={state.errors?.improvement}
+      >
+        <textarea
+          id="improvement"
+          name="improvement"
+          rows={3}
+          defaultValue={value("improvement")}
+          className={inputClass}
+        />
       </Field>
 
       <Field label="使った用語" htmlFor="term-filter" errors={state.errors?.termIds}>

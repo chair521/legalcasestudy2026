@@ -29,7 +29,10 @@ export default async function RecordsPage(props: PageProps<"/records">) {
         現場で「どの手続きで、どこで詰まり、どう説明したか」を残しておき、次の対応や用語集の改善に生かします。
       </p>
 
-      <Form action="/records" className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4">
+      <Form
+        action="/records"
+        className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4"
+      >
         {termId && <input type="hidden" name="term" value={termId} />}
         <div className="min-w-56 flex-1">
           <label htmlFor="q" className="mb-1 block text-xs font-medium text-slate-600">
@@ -59,7 +62,9 @@ export default async function RecordsPage(props: PageProps<"/records">) {
 
       {rows.length === 0 ? (
         <p className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
-          {isFiltered ? "条件に合う記録が見つかりませんでした。" : "まだ記録がありません。「記録を追加」から登録してください。"}
+          {isFiltered
+            ? "条件に合う記録が見つかりませんでした。"
+            : "まだ記録がありません。「記録を追加」から登録してください。"}
         </p>
       ) : (
         <ul className="space-y-3">

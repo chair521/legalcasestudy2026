@@ -14,14 +14,15 @@ export const CSV_HEADERS: Record<TermField, string> = {
 };
 
 /** 取り込み時に受け付けるヘッダー名（日本語・中国語・英語の表記ゆれに対応） */
-const HEADER_ALIASES = new Map<string, TermField>(
-  Object.entries({
-  japanese: "japanese", 日本語: "japanese",
-  chinese: "chinese", 中国語: "chinese", 中文: "chinese", 中国语: "chinese",
-  reading: "reading", 読み: "reading", よみ: "reading", 読み仮名: "reading", ふりがな: "reading",
-  category: "category", カテゴリ: "category", カテゴリー: "category", 分類: "category", 类别: "category",
-  note: "note", メモ: "note", 備考: "note", 备注: "note",
-  } satisfies Record<string, TermField>),
+const HEADER_ALIASES: Record<TermField, string[]> = {
+  japanese: ["japanese", "日本語"],
+  chinese: ["chinese", "中国語", "中文", "中国语"],
+  reading: ["reading", "読み", "よみ", "読み仮名", "ふりがな"],
+  category: ["category", "カテゴリ", "カテゴリー", "分類", "类别"],
+  note: ["note", "メモ", "備考", "备注"],
+};
+const headerToField = new Map(
+  Object.entries(HEADER_ALIASES).flatMap(([field, names]) => names.map((name) => [name, field as TermField])),
 );
 
 export const MAX_IMPORT_ROWS = 2000;
@@ -71,7 +72,7 @@ export function parseTermsCsv(text: string): ParseResult {
   const parsed = Papa.parse<Record<string, string>>(text, {
     header: true,
     skipEmptyLines: "greedy",
-    transformHeader: (h) => HEADER_ALIASES.get(h.trim().toLowerCase()) ?? h.trim(),
+    transformHeader: (h) => headerToField.get(h.trim().toLowerCase()) ?? h.trim(),
   });
 
   const fields = parsed.meta.fields ?? [];
@@ -79,14 +80,21 @@ export function parseTermsCsv(text: string): ParseResult {
   if (missing.length > 0) {
     return {
       rows: [],
-      errors: [{ line: 1, messages: [`ヘッダー行に「${missing.map((f) => CSV_HEADERS[f]).join("」「")}」の列が必要です`] }],
+      errors: [
+        { line: 1, messages: [`ヘッダー行に「${missing.map((f) => CSV_HEADERS[f]).join("」「")}」の列が必要です`] },
+      ],
       duplicateLines: [],
     };
   }
   if (parsed.data.length > MAX_IMPORT_ROWS) {
     return {
       rows: [],
-      errors: [{ line: 1, messages: [`一度に取り込めるのは ${MAX_IMPORT_ROWS} 行までです（${parsed.data.length} 行あります）`] }],
+      errors: [
+        {
+          line: 1,
+          messages: [`一度に取り込めるのは ${MAX_IMPORT_ROWS} 行までです（${parsed.data.length} 行あります）`],
+        },
+      ],
       duplicateLines: [],
     };
   }
@@ -119,7 +127,8 @@ export function parseTermsCsv(text: string): ParseResult {
   });
 
   for (const e of parsed.errors) {
-    if (e.row !== undefined) errors.push({ line: e.row + 2, messages: [`CSV の形式が正しくありません（${e.message}）`] });
+    if (e.row !== undefined)
+      errors.push({ line: e.row + 2, messages: [`CSV の形式が正しくありません（${e.message}）`] });
   }
 
   return { rows: [...byKey.values()].sort((a, b) => a.line - b.line), errors, duplicateLines };

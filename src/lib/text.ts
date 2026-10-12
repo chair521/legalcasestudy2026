@@ -8,7 +8,5 @@ export function normalize(input: string): string {
 
 /** カタカナをひらがなに変換する（ァ〜ヶ の範囲のみ。長音符「ー」はそのまま） */
 export function toHiragana(input: string): string {
-  return input.replace(/[ァ-ヶ]/g, (ch) =>
-    String.fromCharCode(ch.charCodeAt(0) - 0x60),
-  );
+  return input.replace(/[ァ-ヶ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0x60));
 }

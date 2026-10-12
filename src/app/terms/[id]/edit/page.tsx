@@ -10,10 +10,7 @@ export default async function EditTermPage(props: PageProps<"/terms/[id]/edit">)
   const id = Number((await props.params).id);
   if (!Number.isInteger(id)) notFound();
 
-  const [term, categories] = await Promise.all([
-    getTerm(user.id, id),
-    getCategories(user.id),
-  ]);
+  const [term, categories] = await Promise.all([getTerm(user.id, id), getCategories(user.id)]);
   if (!term) notFound();
 
   return (

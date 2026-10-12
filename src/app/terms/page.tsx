@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Term } from "@/db/schema";
 import { DeleteButton } from "@/components/DeleteButton";
 import { Highlight } from "@/components/Highlight";
 import { buttonClass, LinkButton, PageHeader } from "@/components/ui";
@@ -8,6 +9,34 @@ import { toHiragana } from "@/lib/text";
 import { deleteTerm } from "./actions";
 import { getCategoryCounts, getRecordCounts, PAGE_SIZE, searchTerms } from "./queries";
 import { SearchForm } from "./SearchForm";
+
+function CategoryBadge({ category }: { category: string }) {
+  if (!category) return null;
+  return (
+    <Link
+      href={`/terms?category=${encodeURIComponent(category)}`}
+      className="whitespace-nowrap rounded-full bg-teal-50 px-2 py-0.5 text-xs text-teal-800 hover:bg-teal-100"
+    >
+      {category}
+    </Link>
+  );
+}
+
+function TermActions({ term, recordCount }: { term: Term; recordCount?: number }) {
+  return (
+    <>
+      {recordCount !== undefined && (
+        <Link href={`/records?term=${term.id}`} className="mr-3 text-slate-500 hover:text-teal-700 hover:underline">
+          記録 {recordCount}件
+        </Link>
+      )}
+      <Link href={`/terms/${term.id}/edit`} className="mr-2 text-teal-700 hover:underline">
+        編集
+      </Link>
+      <DeleteButton action={deleteTerm.bind(null, term.id)} confirmMessage={`「${term.japanese}」を削除しますか？`} />
+    </>
+  );
+}
 
 export default async function TermsPage(props: PageProps<"/terms">) {
   const user = await requireUser();
@@ -53,8 +82,7 @@ export default async function TermsPage(props: PageProps<"/terms">) {
       <SearchForm q={q} category={category} sort={sort} categoryCounts={categoryCounts} />
 
       <p className="mb-2 text-sm text-slate-500">
-        {total}件
-        {total > PAGE_SIZE && `中 ${(page - 1) * PAGE_SIZE + 1}〜${Math.min(page * PAGE_SIZE, total)}件を表示`}
+        {total}件{total > PAGE_SIZE && `中 ${(page - 1) * PAGE_SIZE + 1}〜${Math.min(page * PAGE_SIZE, total)}件を表示`}
       </p>
 
       {rows.length === 0 ? (
@@ -64,62 +92,74 @@ export default async function TermsPage(props: PageProps<"/terms">) {
             : "まだ用語がありません。「用語を追加」から登録してください。"}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-100 text-left text-slate-600">
-              <tr>
-                <th className="px-4 py-2 font-medium">日本語</th>
-                <th className="px-4 py-2 font-medium">中国語</th>
-                <th className="px-4 py-2 font-medium">読み</th>
-                <th className="px-4 py-2 font-medium">カテゴリ</th>
-                <th className="px-4 py-2 font-medium">メモ</th>
-                <th className="px-4 py-2" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {rows.map((t) => (
-                <tr key={t.id} className="align-top hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-900">
+        <>
+          {/* スマートフォンではカード表示 */}
+          <ul className="space-y-3 md:hidden">
+            {rows.map((t) => (
+              <li key={t.id} className="rounded-lg border border-slate-200 bg-white p-4 text-sm">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="text-base font-medium text-slate-900">
                     <Highlight text={t.japanese} keywords={keywords} />
-                  </td>
-                  <td className="px-4 py-3" lang="zh">
-                    <Highlight text={t.chinese} keywords={keywords} />
-                  </td>
-                  <td className="px-4 py-3 text-slate-500">
+                  </span>
+                  <span className="text-slate-500">
                     <Highlight text={t.reading} keywords={readingKeywords} />
-                  </td>
-                  <td className="px-4 py-3">
-                    {t.category && (
-                      <Link
-                        href={`/terms?category=${encodeURIComponent(t.category)}`}
-                        className="whitespace-nowrap rounded-full bg-teal-50 px-2 py-0.5 text-xs text-teal-800 hover:bg-teal-100"
-                      >
-                        {t.category}
-                      </Link>
-                    )}
-                  </td>
-                  <td className="max-w-xs whitespace-pre-wrap px-4 py-3 text-slate-600">
+                  </span>
+                  <CategoryBadge category={t.category} />
+                </div>
+                <p className="mt-1" lang="zh">
+                  <Highlight text={t.chinese} keywords={keywords} />
+                </p>
+                {t.note && (
+                  <p className="mt-2 whitespace-pre-wrap text-slate-600">
                     <Highlight text={t.note} keywords={keywords} />
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right">
-                    {recordCounts.has(t.id) && (
-                      <Link href={`/records?term=${t.id}`} className="mr-3 text-slate-500 hover:text-teal-700 hover:underline">
-                        記録 {recordCounts.get(t.id)}件
-                      </Link>
-                    )}
-                    <Link href={`/terms/${t.id}/edit`} className="mr-2 text-teal-700 hover:underline">
-                      編集
-                    </Link>
-                    <DeleteButton
-                      action={deleteTerm.bind(null, t.id)}
-                      confirmMessage={`「${t.japanese}」を削除しますか？`}
-                    />
-                  </td>
+                  </p>
+                )}
+                <div className="mt-2 text-right">
+                  <TermActions term={t} recordCount={recordCounts.get(t.id)} />
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="hidden overflow-x-auto rounded-lg border border-slate-200 bg-white md:block">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-100 text-left text-slate-600">
+                <tr>
+                  <th className="whitespace-nowrap px-4 py-2 font-medium">日本語</th>
+                  <th className="whitespace-nowrap px-4 py-2 font-medium">中国語</th>
+                  <th className="whitespace-nowrap px-4 py-2 font-medium">読み</th>
+                  <th className="whitespace-nowrap px-4 py-2 font-medium">カテゴリ</th>
+                  <th className="whitespace-nowrap px-4 py-2 font-medium">メモ</th>
+                  <th className="px-4 py-2" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {rows.map((t) => (
+                  <tr key={t.id} className="align-top hover:bg-slate-50">
+                    <td className="px-4 py-3 font-medium text-slate-900">
+                      <Highlight text={t.japanese} keywords={keywords} />
+                    </td>
+                    <td className="px-4 py-3" lang="zh">
+                      <Highlight text={t.chinese} keywords={keywords} />
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">
+                      <Highlight text={t.reading} keywords={readingKeywords} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <CategoryBadge category={t.category} />
+                    </td>
+                    <td className="max-w-xs whitespace-pre-wrap px-4 py-3 text-slate-600">
+                      <Highlight text={t.note} keywords={keywords} />
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-right">
+                      <TermActions term={t} recordCount={recordCounts.get(t.id)} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {lastPage > 1 && (

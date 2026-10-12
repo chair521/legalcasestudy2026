@@ -4,7 +4,11 @@ import { normalize, toHiragana } from "./text";
 const maxMsg = (max: number) => `${max}文字以内で入力してください`;
 
 // 用語そのもの（日本語・中国語・読み・カテゴリ）は検索でヒットしやすいよう NFKC で正規化する
-const text = (max: number) => z.string().transform(normalize).pipe(z.string().max(max, maxMsg(max)));
+const text = (max: number) =>
+  z
+    .string()
+    .transform(normalize)
+    .pipe(z.string().max(max, maxMsg(max)));
 // メモは書いたとおりに残したいので、前後の空白を除くだけにする
 const freeText = (max: number) => z.string().trim().max(max, maxMsg(max));
 const required = (label: string, max: number) =>
@@ -49,7 +53,15 @@ export const recordInputSchema = z.object({
 });
 
 export type RecordInput = z.infer<typeof recordInputSchema>;
-export const recordFields = ["title", "occurredOn", "procedure", "situation", "issue", "explanation", "improvement"] as const;
+export const recordFields = [
+  "title",
+  "occurredOn",
+  "procedure",
+  "situation",
+  "issue",
+  "explanation",
+  "improvement",
+] as const;
 
 /** 日本時間での今日の日付（YYYY-MM-DD） */
 export function todayInJapan(): string {

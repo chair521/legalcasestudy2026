@@ -19,8 +19,7 @@ export function TermPicker({ options, defaultSelected }: { options: TermOption[]
     const hira = toHiragana(q);
     return options
       .filter(
-        (o) =>
-          o.japanese.toLowerCase().includes(q) || o.chinese.toLowerCase().includes(q) || o.reading.includes(hira),
+        (o) => o.japanese.toLowerCase().includes(q) || o.chinese.toLowerCase().includes(q) || o.reading.includes(hira),
       )
       .slice(0, 30);
   }, [filter, options]);
