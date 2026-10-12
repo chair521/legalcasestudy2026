@@ -55,7 +55,11 @@ export const terms = pgTable(
     note: text("note").notNull().default(""),
     ...timestamps,
   },
-  (t) => [index("terms_user_id_category_idx").on(t.userId, t.category)],
+  (t) => [
+    index("terms_user_id_category_idx").on(t.userId, t.category),
+    // 同じユーザーが同じ「日本語＋中国語」を二重に登録しないように（CSV 取り込み時の重複判定にも使う）
+    uniqueIndex("terms_user_id_japanese_chinese_idx").on(t.userId, t.japanese, t.chinese),
+  ],
 );
 
 // 対応記録：どの手続きで、どこで詰まり、どう説明したか

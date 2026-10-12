@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { DeleteButton } from "@/components/DeleteButton";
 import { Highlight } from "@/components/Highlight";
-import { LinkButton, PageHeader } from "@/components/ui";
+import { buttonClass, LinkButton, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth/session";
 import { firstParam, parseKeywords, parsePage, parseSort } from "@/lib/search";
 import { toHiragana } from "@/lib/text";
@@ -41,6 +41,12 @@ export default async function TermsPage(props: PageProps<"/terms">) {
   return (
     <>
       <PageHeader title="用語集">
+        <LinkButton href="/terms/import" variant="secondary">
+          CSV 取り込み
+        </LinkButton>
+        <a href="/terms/export" className={buttonClass.secondary} download>
+          CSV 書き出し
+        </a>
         <LinkButton href="/terms/new">＋ 用語を追加</LinkButton>
       </PageHeader>
 

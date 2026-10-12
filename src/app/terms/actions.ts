@@ -5,11 +5,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
+import { isUniqueViolation } from "@/db/errors";
 import { terms } from "@/db/schema";
 import { requireUser } from "@/lib/auth/session";
 import { type FormState, pickFormValues, termFields, termInputSchema } from "@/lib/validation";
 
 export type TermFormState = FormState<(typeof termFields)[number]>;
+
+const DUPLICATE_MESSAGE = "同じ日本語・中国語の組み合わせが既に登録されています";
 
 function parse(formData: FormData) {
   const values = pickFormValues(formData, termFields);
@@ -23,7 +26,12 @@ export async function createTerm(_prev: TermFormState, formData: FormData): Prom
     return { values, errors: z.flattenError(result.error).fieldErrors };
   }
 
-  await db.insert(terms).values({ ...result.data, userId: user.id });
+  try {
+    await db.insert(terms).values({ ...result.data, userId: user.id });
+  } catch (error) {
+    if (isUniqueViolation(error)) return { values, message: DUPLICATE_MESSAGE };
+    throw error;
+  }
 
   revalidatePath("/terms");
   redirect("/terms");
@@ -37,11 +45,17 @@ export async function updateTerm(id: number, _prev: TermFormState, formData: For
   }
 
   // 条件に user_id を必ず含め、他のユーザーの用語は更新できないようにする
-  const updated = await db
-    .update(terms)
-    .set(result.data)
-    .where(and(eq(terms.id, id), eq(terms.userId, user.id)))
-    .returning({ id: terms.id });
+  let updated: { id: number }[];
+  try {
+    updated = await db
+      .update(terms)
+      .set(result.data)
+      .where(and(eq(terms.id, id), eq(terms.userId, user.id)))
+      .returning({ id: terms.id });
+  } catch (error) {
+    if (isUniqueViolation(error)) return { values, message: DUPLICATE_MESSAGE };
+    throw error;
+  }
   if (updated.length === 0) {
     return { values, message: "用語が見つかりませんでした（削除された可能性があります）" };
   }
